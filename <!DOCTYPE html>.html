@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測測你離脫單有多近？</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+            overflow-y: auto; /* 允許下拉卷軸 */
+        }
+        #quiz-container {
+            display: none; /* 隱藏 Quiz 直到開始 */
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            overflow-y: auto; /* 設定下拉卷軸 */
+            max-height: 80vh;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        button {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-container">
+        <h1>測測你離脫單有多近？</h1>
+        <button id="start-button">開始</button>
+    </div>
+
+    <div id="quiz-container">
+        <div id="quiz"></div>
+        <button id="next-button">下一頁</button>
+        <p id="error-message" class="error">請回答所有問題！</p>
+    </div>
+
+    <div id="result-container" class="hidden">
+        <h2>測驗結果</h2>
+        <div id="result-text"></div>
+    </div>
+
+    <script>
+        const questions = [
+            [
+                {
+                    question: "1. 你目前對戀愛的態度是？",
+                    options: ["A. 很期待，積極想認識對象", "B. 有點想，但不太知道怎麼開始", "C. 隨緣啦，不強求", "D. 沒時間／現在不想談戀愛"]
+                },
+                {
+                    question: "2. 你對於「脫單」的急迫感是？",
+                    options: ["A. 非常急，最好明天就有伴", "B. 有一點，希望今年內有進展", "C. 不急，順其自然", "D. 沒什麼感覺，甚至有點排斥"]
+                },
+                {
+                    question: "3. 你覺得你單身的主要原因是？",
+                    options: ["A. 社交圈太小，認識不到新對象", "B. 不知道怎麼和異性互動", "C. 自我要求高／條件太嚴", "D. 過去的感情經驗讓我卻步"]
+                },
+                {
+                    question: "4. 對你來說，戀愛最重要的是什麼？",
+                    options: ["A. 情感連結與陪伴", "B. 外表與吸引力", "C. 價值觀相近與生活步調合拍", "D. 經濟與現實條件"]
+                },
+                {
+                    question: "5. 你願意為了談戀愛改變生活習慣或嘗試新事物嗎？",
+                    options: ["A. 當然願意，為愛衝一波", "B. 願意一點點，慢慢來", "C. 看情況，不強求", "D. 不太願意，我很習慣現在的生活"]
+                }
+            ],
+            [
+                {
+                    question: "6. 你平常認識新朋友的管道是？",
+                    options: ["A. 朋友介紹／社交活動", "B. 交友軟體", "C. 網路社群（例如 IG、脆）", "D. 幾乎沒有在認識新朋友"]
+                },
+                {
+                    question: "7. 如果喜歡一個人，你通常會：",
+                    options: ["A. 主動找話題、製造見面機會", "B. 含蓄示好，等對方察覺", "C. 在心裡喜歡但不行動", "D. 拖很久，等對方先出招"]
+                },
+                {
+                    question: "8. 和異性相處時，你最常遇到的困擾是？",
+                    options: ["A. 不知道怎麼開話題", "B. 聊天容易變尷尬", "C. 不確定對方喜不喜歡我", "D. 自己太緊張，容易說錯話"]
+                },
+                {
+                    question: "9. 你在初次約會時的表現通常是：",
+                    options: ["A. 放得很開，自然聊天", "B. 稍微緊張，但還能維持對話", "C. 超級緊張，腦袋一片空白", "D. 幾乎不太約會"]
+                },
+                {
+                    question: "10. 如果對方回覆訊息很慢，你會怎麼做？",
+                    options: ["A. 理性看待，不太受影響", "B. 開始有點焦慮，會偷看對話紀錄", "C. 覺得對方是不是沒興趣", "D. 直接也開始冷掉，不想主動"]
+                }
+            ],
+            [
+                {
+                    question: "11. 你對另一半的外型要求是：",
+                    options: ["A. 要順眼、乾淨舒服就好", "B. 要有某些特定風格（例：陽光型／斯文型）", "C. 要很有吸引力，外型佔很大比例", "D. 外型不太重要，個性比較重要"]
+                },
+                {
+                    question: "12. 你對另一半的經濟條件要求是：",
+                    options: ["A. 穩定工作即可", "B. 比我好一點，希望他能帶我一起成長", "C. 必須達到某個水準（例如年收、職業）", "D. 不太在意，只要努力就行"]
+                },
+                {
+                    question: "13. 你理想的交往節奏是：",
+                    options: ["A. 喜歡自然、慢慢培養感情", "B. 曖昧一陣子後順勢交往", "C. 確認感覺就可以直接在一起", "D. 我其實不太清楚／沒特別想過"]
+                },
+                {
+                    question: "14. 如果你和對方價值觀有衝突，你會：",
+                    options: ["A. 嘗試溝通理解對方", "B. 觀望一陣子，看能不能磨合", "C. 直接退縮，覺得不適合", "D. 會糾結很久，不知道怎麼辦"]
+                },
+                {
+                    question: "15. 你對戀愛中「性」的看法是：",
+                    options: ["A. 是感情的一部分，彼此都要舒服", "B. 交往穩定後再發生比較好", "C. 看感覺，有時候也可以很自然", "D. 我比較保守／排斥這部分"]
+                }
+            ],
+            [
+                {
+                    question: "16. 你目前的生活型態是：",
+                    options: ["A. 積極豐富，常參加各種活動", "B. 工作為主，偶爾社交", "C. 規律單一，生活圈很固定", "D. 幾乎都宅在家／不太外出"]
+                },
+                {
+                    question: "17. 你對自己的外在打理（穿搭、儀態）滿意度是：",
+                    options: ["A. 很滿意，我懂得呈現自己的魅力", "B. 還可以，算中等", "C. 不太滿意，覺得自己普通", "D. 幾乎不太在意外在"]
+                },
+                {
+                    question: "18. 當你遇到感情上的瓶頸時，你會：",
+                    options: ["A. 主動尋求建議或資源", "B. 自己思考一陣子", "C. 逃避、不太想面對", "D. 直接放棄，覺得太難"]
+                },
+                {
+                    question: "19. 你願意為了脫單做哪些行動？",
+                    options: ["A. 積極參加交友活動／尋求專業協助", "B. 提升自己、增加魅力", "C. 下載交友軟體、拓展人脈", "D. 還沒想過／不太想改變"]
+                },
+                {
+                    question: "20. 你希望多久內能找到另一半？",
+                    options: ["A. 半年內", "B. 一年內", "C. 兩年內", "D. 不一定，看緣分"]
+                }
+            ]
+        ];
+
+        let currentSectionIndex = 0;
+        let answers = [];
+
+        document.getElementById('start-button').addEventListener('click', function() {
+            document.getElementById('welcome-container').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            loadQuiz();
+        });
+
+        document.getElementById('next-button').addEventListener('click', function() {
+            const selectedOptions = document.querySelectorAll('input[type="radio"]:checked');
+            if (selectedOptions.length < 5) {
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('error-message').style.display = 'none';
+            }
+
+            answers.push(...Array.from(selectedOptions).map(option => option.value));
+            currentSectionIndex++;
+
+            // 如果已經完成所有問題，顯示結果
+            if (currentSectionIndex >= questions.length) {
+                showResult();
+            } else {
+                loadQuiz();
+            }
+        });
+
+        function loadQuiz() {
+            const questionSet = questions[currentSectionIndex];
+            let quizHTML = '';
+
+            questionSet.forEach((q) => {
+                quizHTML += `<div class="question"><h3>${q.question}</h3>`;
+                q.options.forEach((option, index) => {
+                    quizHTML += `<label><input type="radio" name="q${q.question}" value="${option.charAt(0)}"> ${option}</label><br>`;
+                });
+                quizHTML += `</div>`;
+            });
+
+            document.getElementById('quiz').innerHTML = quizHTML;
+            document.getElementById('quiz-container').scrollTop = 0; // 每次加載新問題時捲回頂部
+        }
+
+        function showResult() {
+            const resultsCount = { A: 0, B: 0, C: 0, D: 0 };
+            for (const answer of answers) {
+                resultsCount[answer]++;
+            }
+
+            let resultText = '';
+            if (resultsCount.A >= resultsCount.B && resultsCount.A >= resultsCount.C && resultsCount.A >= resultsCount.D) {
+                resultText = `💪 行動型 —「你離脫單，只差一個好機會！」<br>你對戀愛有明確渴望，也願意行動認識新朋友！<br>✅ 優勢：主動積極、有行動力、勇於嘗試<br>⚠️ 建議：找對方向＋策略，別浪費能量在錯的人身上<br>👉 建議你參加實體活動／精準配對，效果會非常好！`;
+            } else if (resultsCount.B >= resultsCount.A && resultsCount.B >= resultsCount.C && resultsCount.B >= resultsCount.D) {
+                resultText = `🌱 調適型 —「你的戀愛拼圖，只差最後幾塊」<br>你內心其實渴望愛情，也願意嘗試，但步伐較小。<br>✅ 優勢：懂得觀察、重視感覺、不急躁<br>⚠️ 建議：適時尋求專業建議或環境資源，能幫你更快脫單<br>👉 你很適合一對一諮詢或戀愛提升課程✨`;
+            } else if (resultsCount.C >= resultsCount.A && resultsCount.C >= resultsCount.B && resultsCount.C >= resultsCount.D) {
+                resultText = `🤯 矛盾型 —「你的卡點，在『想太多』與『不敢行動』之間」<br>你其實很想戀愛，但內心常常猶豫、怕受傷。<br>✅ 優勢：敏感細膩、重視情感<br>⚠️ 建議：先梳理內在的阻礙，找到安全感，再搭配行動<br>👉 你適合從自我探索＋互動訓練開始，逐步打開戀愛開關❤️`;
+            } else if (resultsCount.D >= resultsCount.A && resultsCount.D >= resultsCount.B && resultsCount.D >= resultsCount.C) {
+                resultText = `🧊 封印型 —「你的心，暫時關機中」<br>你對戀愛沒有明確行動力，可能過去受過傷，也可能單身太久習慣了。<br>✅ 優勢：理性、重視自我生活<br>⚠️ 建議：先了解自己現在真正的狀態，不用急著談戀愛<br>👉 建議從輕鬆的社交體驗開始，慢慢暖機就好！`;
+            }
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('result-text').innerHTML = resultText;
+
+            // 回傳至Google表單 (這部分需要你替換表單的URL)
+            sendToGoogleForms();
+        }
+
+        function sendToGoogleForms() {
+            const formUrl = "https://docs.google.com/forms/u/0/d/e/YOUR_FORM_ID/formResponse";
+
+            // 替換YOUR_FORM_ID為你的表單ID
+            const formData = new URLSearchParams();
+            answers.forEach((answer, index) => {
+                formData.append(`entry.${index + 1}`, answer);  // entry.[number] 需根據你的Google表單ID進行調整
+            });
+
+            fetch(formUrl, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors' // Google表單不支持CORS，這是解決方法
+            })
+            .then(() => console.log('Responses sent to Google Form'))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+</body>
+</html>
